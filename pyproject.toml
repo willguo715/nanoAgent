@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nano-agent"
+version = "0.1.0"
+description = "A local CLI agent with tool routing and markdown session memory."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "openai>=1.40.0",
+  "tavily-python>=0.5.0",
+  "pydantic>=2.7.0",
+  "pyyaml>=6.0.1",
+  "tenacity>=9.0.0",
+]
+
+[project.scripts]
+nano-agent = "nano_agent.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

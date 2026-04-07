@@ -1,0 +1,16 @@
+README.md
+pyproject.toml
+src/nano_agent/__init__.py
+src/nano_agent/cli.py
+src/nano_agent/config.py
+src/nano_agent.egg-info/PKG-INFO
+src/nano_agent.egg-info/SOURCES.txt
+src/nano_agent.egg-info/dependency_links.txt
+src/nano_agent.egg-info/entry_points.txt
+src/nano_agent.egg-info/requires.txt
+src/nano_agent.egg-info/top_level.txt
+src/nano_agent/core/agent.py
+src/nano_agent/memory/session_store.py
+src/nano_agent/tools/llm_openai_compat.py
+src/nano_agent/tools/shell_guard.py
+src/nano_agent/tools/tavily_search.py

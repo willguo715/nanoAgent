@@ -1,0 +1,25 @@
+llm:
+  base_url: https://ark.cn-beijing.volces.com/api/coding/v3
+  api_key: 648dea8c-167e-4b7e-8cab-b170a46b3ceb
+  model: kimi-k2.5
+  temperature: 0.2
+tavily:
+  api_key: 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
+  max_results: 5
+agent:
+  max_context_turns: 6
+  max_retries: 3
+  max_exec_attempts: 3
+  session_dir: sessions
+shell:
+  workspace_only: true
+  allowlist:
+  - cat
+  - date
+  - dir
+  - ls
+  - pwd
+  - python --version
+  - python -c "print(__import__('datetime').date.today())"
+  - rg
+  - type
