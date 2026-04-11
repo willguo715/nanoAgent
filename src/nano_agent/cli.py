@@ -54,16 +54,17 @@ def chat_command(args: argparse.Namespace) -> None:
 def build_parser() -> argparse.ArgumentParser:
     """构建 CLI 参数解析器并绑定子命令处理函数。"""
     parser = argparse.ArgumentParser(prog="nano-agent", description="A local CLI agent.")
-    parser.add_argument("--config", default="config.yaml", help="配置文件路径")
     sub = parser.add_subparsers(dest="command", required=True)
 
     run_p = sub.add_parser("run", help="单次执行")
+    run_p.add_argument("--config", default="config.yaml", help="配置文件路径")
     run_p.add_argument("prompt", help="用户输入文本")
     run_p.add_argument("--image", default=None, help="本地图片路径")
     run_p.add_argument("--session", default="default", help="会话名")
     run_p.set_defaults(func=run_command)
 
     chat_p = sub.add_parser("chat", help="进入多轮对话")
+    chat_p.add_argument("--config", default="config.yaml", help="配置文件路径")
     chat_p.add_argument("--session", default="default", help="会话名")
     chat_p.set_defaults(func=chat_command)
     return parser

@@ -9,11 +9,36 @@ import yaml
 
 def _merge_env(cfg: dict[str, Any]) -> dict[str, Any]:
     """将环境变量覆盖到配置，方便本地开发快速切换。"""
-    cfg["llm"]["base_url"] = os.getenv("OPENAI_BASE_URL", cfg["llm"]["base_url"])
-    cfg["llm"]["api_key"] = os.getenv("OPENAI_API_KEY", cfg["llm"]["api_key"])
-    cfg["llm"]["model"] = os.getenv("OPENAI_MODEL", cfg["llm"]["model"])
-    cfg["tavily"]["api_key"] = os.getenv("TAVILY_API_KEY", cfg["tavily"]["api_key"])
+    cfg.setdefault("llm", {})
+    cfg.setdefault("tavily", {})
+    cfg["llm"]["base_url"] = os.getenv("OPENAI_BASE_URL", cfg["llm"].get("base_url", ""))
+    cfg["llm"]["api_key"] = os.getenv("OPENAI_API_KEY", cfg["llm"].get("api_key", ""))
+    cfg["llm"]["model"] = os.getenv("OPENAI_MODEL", cfg["llm"].get("model", ""))
+    cfg["tavily"]["api_key"] = os.getenv("TAVILY_API_KEY", cfg["tavily"].get("api_key", ""))
     return cfg
+
+
+def _inherit_tavily_from_repo_root_if_empty(cfg: dict[str, Any], loaded_path: Path) -> None:
+    """
+    子项目 nanoAgent-langchain 的 config.yaml 若未填 tavily.api_key，
+    自动尝试读取上一级仓库根目录的 config.yaml（与主项目共用一份密钥）。
+    """
+    tav = cfg.setdefault("tavily", {})
+    if str(tav.get("api_key") or "").strip():
+        return
+    resolved = loaded_path.resolve()
+    if resolved.parent.name != "nanoAgent-langchain":
+        return
+    root_cfg = resolved.parent.parent / "config.yaml"
+    if not root_cfg.is_file():
+        return
+    try:
+        root_doc = yaml.safe_load(root_cfg.read_text(encoding="utf-8")) or {}
+        key = (root_doc.get("tavily") or {}).get("api_key") or ""
+        if str(key).strip():
+            tav["api_key"] = key
+    except OSError:
+        pass
 
 
 def load_config(path: str = "config.yaml") -> dict[str, Any]:
@@ -23,6 +48,7 @@ def load_config(path: str = "config.yaml") -> dict[str, Any]:
         raise FileNotFoundError(f"配置文件不存在: {path}")
     content = yaml.safe_load(file_path.read_text(encoding="utf-8")) or {}
     cfg = _merge_env(content)
+    _inherit_tavily_from_repo_root_if_empty(cfg, file_path)
     cfg.setdefault("llm", {})
     cfg["llm"].setdefault("temperature", 0.2)
     cfg.setdefault("tavily", {})
