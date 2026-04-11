@@ -30,10 +30,8 @@ htmlcov/
 .env.*
 !.env.example
 
-# YAML 配置中的 api_key 等敏感信息：本地复制 config.yaml.example 为 config.yaml 后填写
-/config.yaml
-nanoAgent-langchain/config.yaml
-nanoAgent-langgraph/config.yaml
+# 含 API Key 的本地配置（复制 config.yaml.example 为 config.yaml）
+config.yaml
 *.local.yaml
 
 # 常见密钥/凭证文件

@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nano-agent-langgraph"
+version = "0.1.0"
+description = "nano-agent 的 LangGraph 编排版：与原版相同的 LLM/工具逻辑，状态机由图驱动。"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "langgraph>=0.2.60",
+  "openai>=1.40.0",
+  "pydantic>=2.7.0",
+  "pyyaml>=6.0.1",
+  "tenacity>=9.0.0",
+  "tavily-python>=0.5.0",
+]
+
+[project.scripts]
+nano-agent-langgraph = "nano_agent_langgraph.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

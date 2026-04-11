@@ -5,7 +5,7 @@ from typing import Any
 
 from openai import BadRequestError, OpenAI
 
-from nano_agent.utils.retry import retry
+from nano_agent_langgraph.utils.retry import retry
 
 
 def _truncate_text(text: str, max_chars: int) -> str:
@@ -233,6 +233,7 @@ class LLMTool:
         try:
             return self._completion_text(msg, temperature=0.2)
         except BadRequestError as exc:
+            # 阿里云等兼容网关：整段输入可能触发 data_inspection_failed，再试极简提示
             minimal = f"""请用简体中文写简短 Markdown（约 200 字），根据用户问题和下列要点回答，不要复述网页全文。
 用户问题：{user_input}
 要点：need_tools={planner.get("need_tools")}；已调用工具：{", ".join(str(x.get("tool")) for x in compact_logs) or "无"}。
