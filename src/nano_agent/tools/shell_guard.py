@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
-import subprocess
-import shlex
+import os
 import re
+import shlex
+import subprocess
+from pathlib import Path
 from typing import Any
 
 import yaml
@@ -87,8 +88,28 @@ class ShellGuard:
         cfg["shell"]["allowlist"] = sorted(set(self.allowlist), key=str.lower)
         self.config_path.write_text(yaml.safe_dump(cfg, sort_keys=False, allow_unicode=True), encoding="utf-8")
 
+    def _rewrite_windows_date_command(self, command: str) -> str:
+        """
+        Windows CMD 不支持 GNU 的 `date +FORMAT`，模型常误用会导致卡住直至超时。
+        将类 Unix 的 date 写法改写为受限 python -c（与 _is_safe_python_c_template 一致）。
+        """
+        if os.name != "nt":
+            return command
+        text = command.strip()
+        # GNU date：date +%A、date +%F 等
+        if re.match(r"^date\s+\+", text, flags=re.IGNORECASE):
+            return (
+                'python -c "import datetime; n=datetime.datetime.now(); '
+                "print(n.strftime('%Y-%m-%d'), n.strftime('%A'))\""
+            )
+        # 裸 `date` 在 CMD 下可能进入交互式修改日期，长时间阻塞
+        if re.match(r"^date\s*$", text, flags=re.IGNORECASE):
+            return "date /t"
+        return command
+
     def exec(self, command: str) -> dict[str, Any]:
         """在安全校验后执行命令并返回标准化执行结果。"""
+        command = self._rewrite_windows_date_command(command)
         self._safe_guard(command)
         if not self._is_allowed(command) and not self._prompt_allow(command):
             return {"ok": False, "error": "command not allowed by user"}

@@ -47,6 +47,15 @@ class LLMTool:
         execution_feedback: str = "",
     ) -> dict[str, Any]:
         """输出结构化决策，决定是否使用工具。"""
+        feedback = (execution_feedback or "").strip()
+        retry_block = ""
+        if feedback and feedback != "(none)":
+            retry_block = f"""
+【上一轮未通过，必须按反馈修正】
+反馈原文：{feedback}
+若反馈指出「需要工具证据但未调用工具」：本轮必须设 need_tools=true，并至少调用一次 shell_exec 或 tavily_search；禁止再次仅返回 need_tools=false。
+"""
+
         prompt = f"""
 你是一个 CLI Agent 的规划器。请只输出 JSON，不要输出其他内容。
 字段：
@@ -62,8 +71,12 @@ class LLMTool:
 - shell_exec 仅用于读取本地信息，不执行写入或危险命令。
 - shell_exec 命令禁止使用 &&、||、;、|、>、>>、< 等拼接/重定向符号。
 - 生成尽量简单、跨平台、安全的单条命令（例如 python --version、dir、ls）。
-- 如果信息足够，need_tools=false。
-
+- 在 Windows 上禁止使用 Linux 的 `date +%A`、`date +%F` 等（CMD 会卡住或超时）；请用一条 python -c 打印本机日期与星期英文缩写，例如：
+  python -c "import datetime; n=datetime.datetime.now(); print(n.strftime('%Y-%m-%d'), n.strftime('%A'))"
+- 当用户询问「今天/现在/几月/几号/几点/星期几/日期/时间」等**依赖本机或实时环境**的信息时，必须 need_tools=true，并用 shell_exec 获取本机日期时间，不可仅凭模型记忆回答。
+- 当用户询问「本地目录/文件/版本」等需本机读取时，必须 need_tools=true。
+- 仅当问题明显属于纯知识推理、与当前时间/本机环境无关时，才可 need_tools=false。
+{retry_block}
 历史上下文：
 {conversation_context}
 
@@ -72,7 +85,7 @@ class LLMTool:
 图片路径：{image_path or "(none)"}
 
 上轮执行反馈（若为空表示首次规划）：
-{execution_feedback or "(none)"}
+{feedback or "(none)"}
 """
         raw = self._chat([{"role": "user", "content": prompt}], temperature=0.1)
         try:

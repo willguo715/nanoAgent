@@ -103,16 +103,23 @@ class AgentRunner:
 
         for log in tool_logs:
             result = log.get("result", {})
-            if isinstance(result, dict):
-                if result.get("ok") is True:
-                    # shell_exec 需要 returncode=0 作为成功信号
-                    if log.get("tool") == "shell_exec":
-                        if int(result.get("returncode", 1)) == 0:
-                            return True, "shell_exec completed with returncode=0"
-                    else:
-                        return True, f"{log.get('tool', 'tool')} returned ok=true"
-                if result.get("error"):
-                    return False, f"{log.get('tool', 'tool')} error: {result.get('error')}"
+            if not isinstance(result, dict):
+                continue
+            name = log.get("tool", "unknown")
+
+            # _run_tools 在异常时统一包装为 ok:false + error
+            if result.get("ok") is False and result.get("error"):
+                return False, f"{name} error: {result.get('error')}"
+
+            # Tavily 成功响应为 API 原样 dict，通常不含 ok；不能用 result.ok==True 判断
+            if name == "tavily_search":
+                return True, "tavily_search completed"
+
+            if name == "shell_exec":
+                if result.get("ok") is True and int(result.get("returncode", 1)) == 0:
+                    return True, "shell_exec completed with returncode=0"
+                continue
+
         return False, "all tool calls failed or returned non-success status"
 
     def run_once(
