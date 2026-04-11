@@ -25,7 +25,7 @@ pip install -e .
 
 2. 配置
 
-复制 `.env.example` 并设置环境变量，或直接修改 `config.yaml`。
+复制 `config.yaml.example` 为 `config.yaml` 并填写密钥（`config.yaml` 已加入 `.gitignore`，勿提交）；或复制 `.env.example` 并通过环境变量注入。
 
 3. 运行
 

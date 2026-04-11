@@ -1,0 +1,26 @@
+# 复制本文件为 config.yaml 并填写密钥，勿将 config.yaml 提交到 Git（已在 .gitignore）
+llm:
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  api_key: ""
+  model: tongyi-xiaomi-analysis-pro
+  temperature: 0.2
+tavily:
+  api_key: ""
+  max_results: 5
+agent:
+  max_context_turns: 6
+  max_retries: 3
+  max_exec_attempts: 3
+  session_dir: sessions
+shell:
+  workspace_only: true
+  allowlist:
+  - cat
+  - date
+  - dir
+  - ls
+  - pwd
+  - python --version
+  - python -c "print(__import__('datetime').date.today())"
+  - rg
+  - type
