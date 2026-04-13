@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nano-agent-crewai"
+version = "0.1.0"
+description = "nano-agent 的 CrewAI 版：规划用 Agent/Task/Crew，工具路由与 Markdown 会话与主项目对齐。"
+readme = "README.md"
+# crewai 在 PyPI 上多数版本声明 python_version<'3.14'；3.14 环境不装 crewai，运行时自动回退 LLMTool.plan。
+requires-python = ">=3.11"
+dependencies = [
+  "crewai>=0.86.0; python_version < \"3.14\"",
+  "openai>=1.40.0",
+  "pydantic>=2.7.0",
+  "pyyaml>=6.0.1",
+  "tenacity>=9.0.0",
+  "tavily-python>=0.5.0",
+]
+
+[project.scripts]
+nano-agent-crewai = "nano_agent_crewai.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
